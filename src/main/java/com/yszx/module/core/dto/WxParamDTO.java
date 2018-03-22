@@ -4,9 +4,10 @@ import com.xiaodajia.framework.entity.BaseEntity;
 
 public class WxParamDTO extends BaseEntity {
 	private String appId;
-	private String secret;
-	private String partner;
-	private String partnerkey;
+	private String appkey;
+	private String appSecret;
+	private String merchant;
+	private String merchantkey;
 	private String gateurl;
 	private String tradeType;
 	private String tradeNative;
@@ -15,25 +16,45 @@ public class WxParamDTO extends BaseEntity {
 	private String wxPackage;
 	private String extStr1;
 
+	private String openId;
+
 	public WxParamDTO() {
 
 	}
 
-	public WxParamDTO(String appId, String secret, String partner,
-			String partnerkey, String gateurl, String tradeType,
-			String tradeNative, String signType, String notifyUrl,
-			String wxPackage) {
+	public WxParamDTO(String appId, String appkey, String appSecret,
+			String merchant, String merchantkey, String gateurl,
+			String tradeType, String tradeNative, String signType,
+			String notifyUrl, String wxPackage, String extStr1) {
 		super();
 		this.appId = appId;
-		this.secret = secret;
-		this.partner = partner;
-		this.partnerkey = partnerkey;
+		this.appkey = appkey;
+		this.appSecret = appSecret;
+		this.merchant = merchant;
+		this.merchantkey = merchantkey;
 		this.gateurl = gateurl;
 		this.tradeType = tradeType;
 		this.tradeNative = tradeNative;
 		this.signType = signType;
 		this.notifyUrl = notifyUrl;
 		this.wxPackage = wxPackage;
+		this.extStr1 = extStr1;
+	}
+
+	public String getMerchant() {
+		return merchant;
+	}
+
+	public void setMerchant(String merchant) {
+		this.merchant = merchant;
+	}
+
+	public String getMerchantkey() {
+		return merchantkey;
+	}
+
+	public void setMerchantkey(String merchantkey) {
+		this.merchantkey = merchantkey;
 	}
 
 	public String getAppId() {
@@ -42,30 +63,6 @@ public class WxParamDTO extends BaseEntity {
 
 	public void setAppId(String appId) {
 		this.appId = appId;
-	}
-
-	public String getSecret() {
-		return secret;
-	}
-
-	public void setSecret(String secret) {
-		this.secret = secret;
-	}
-
-	public String getPartner() {
-		return partner;
-	}
-
-	public void setPartner(String partner) {
-		this.partner = partner;
-	}
-
-	public String getPartnerkey() {
-		return partnerkey;
-	}
-
-	public void setPartnerkey(String partnerkey) {
-		this.partnerkey = partnerkey;
 	}
 
 	public String getGateurl() {
@@ -122,6 +119,30 @@ public class WxParamDTO extends BaseEntity {
 
 	public void setExtStr1(String extStr1) {
 		this.extStr1 = extStr1;
+	}
+
+	public String getAppkey() {
+		return appkey;
+	}
+
+	public void setAppkey(String appkey) {
+		this.appkey = appkey;
+	}
+
+	public String getAppSecret() {
+		return appSecret;
+	}
+
+	public void setAppSecret(String appSecret) {
+		this.appSecret = appSecret;
+	}
+
+	public String getOpenId() {
+		return openId;
+	}
+
+	public void setOpenId(String openId) {
+		this.openId = openId;
 	}
 
 }

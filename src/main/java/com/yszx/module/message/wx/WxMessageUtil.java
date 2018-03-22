@@ -50,7 +50,7 @@ public class WxMessageUtil {
 			String josnStr = JSONObject.valueToString(jsonMap);
 			String access_token = "";
 			access_token = WxCore.getWxAccessToken(wxParam.getAppId(),
-					wxParam.getSecret());
+					wxParam.getAppSecret());
 			if (StringUtils.isEmpty(access_token)) {
 				throw new BaseRuntimeWithCodeException("获取微信TOKEN失败",
 						ErrorCodelEnum.PARAMETER_ERROR.getCode());

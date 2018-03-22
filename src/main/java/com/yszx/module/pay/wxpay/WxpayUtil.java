@@ -23,6 +23,10 @@ import java.util.Map.Entry;
 
 import org.apache.commons.httpclient.NameValuePair;
 
+import com.xiaodajia.framework.exception.BaseRuntimeWithCodeException;
+import com.xiaodajia.framework.exception.ErrorCodelEnum;
+import com.xiaodajia.framework.util.string.StringUtils;
+import com.yszx.module.core.dto.WxParamDTO;
 import com.yszx.module.pay.config.WxPayConfig;
 import com.yszx.module.pay.util.MD5Util;
 import com.yszx.module.pay.util.XMLUtil;
@@ -91,84 +95,85 @@ public class WxpayUtil {
 		return requestResult;
 	}
 
-	/**
-	 * 
-	 * @param orderid
-	 *            商家唯一订单号 对应out_trade_no
-	 * @param price
-	 *            支付金额 对应total_fee
-	 * @param notifyurl
-	 *            接收微信支付异步通知回调地址
-	 * @param pars
-	 * @return
-	 * @throws Exception
-	 */
-	public static List<NameValuePair> getPayParams(String orderid,
-			String price, String notifyurl, Map<String, Object> pars)
-			throws Exception {
-		List<NameValuePair> temp = null;
-		String prepayid = "";
-
-		String times = WXUtil.getTimeStamp();
-		// 随机字符串，不长于32位
-		String noncestr = WXUtil.getNonceStr();
-
-		String localip = "10.9.20.1"; // 默认ip，如果取不到就采用默认的，防止空值；
-		try {
-			InetAddress addr = InetAddress.getLocalHost();
-			localip = addr.getHostAddress().toString();
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-		// 对参数进行加密；
-		Map<String, String> sParaTemp = new HashMap<String, String>();
-		sParaTemp.put("appid", WxPayConfig.wx_appid);
-		sParaTemp.put("mch_id", WxPayConfig.wx_partner);
-		sParaTemp.put("nonce_str", noncestr);
-		sParaTemp.put("body", WxPayConfig.wx_paybody);
-		sParaTemp.put("out_trade_no", orderid);
-		sParaTemp.put("total_fee", price);
-		sParaTemp.put("spbill_create_ip", localip);
-		sParaTemp.put("notify_url", notifyurl);
-		sParaTemp.put("trade_type", WxPayConfig.wx_tradetype);
-
-		String sign = wxSign(sParaTemp);
-		LogUtils.log("【微信预支付交易单】 --- sign：" + sign);
-		sParaTemp.put("sign", sign);
-		// 开始组装参数xml
-		String requestxml = getRequestXml(sParaTemp);
-		LogUtils.log("【微信预支付交易单】 --- requestxml：" + requestxml);
-
-		String requestUrl = WxPayConfig.wx_gateurl;
-
-		String resp = PayPost(requestUrl, requestxml);
-		LogUtils.log("【微信预支付交易单】 --- 微信预支付id回执：" + resp);
-
-		Map<Object, Object> respMap = XMLUtil.doXMLParse(resp);
-		LogUtils.log("【微信预支付交易单】 --- 微信预支付id回执Map数据：" + respMap.toString());
-
-		String respresut = String.valueOf(respMap.get("result_code"));
-		if ("SUCCESS".equals(respresut)) {
-			// TODO 严谨处理，增加成功判断
-			prepayid = (String.valueOf(respMap.get("prepay_id")));
-			LogUtils.log("【微信预支付交易单】 --- prepayid：" + prepayid);
-
-			temp = new LinkedList<NameValuePair>();
-			temp.add(new NameValuePair("appid", WxPayConfig.wx_appid));
-			temp.add(new NameValuePair("package", WxPayConfig.wx_package));
-			temp.add(new NameValuePair("partnerid", WxPayConfig.wx_partner));
-			temp.add(new NameValuePair("prepayid", prepayid));
-			temp.add(new NameValuePair("noncestr", noncestr));
-			temp.add(new NameValuePair("timestamp", times));
-			String resultsign = wxSign(temp);
-			temp.add(new NameValuePair("sign", resultsign));
-			temp.remove(0);
-			temp.remove(0);
-			temp.add(new NameValuePair("out_trade_no", orderid));
-		}
-
-		return temp;
-	}
+	//
+	// /**
+	// *
+	// * @param orderid
+	// * 商家唯一订单号 对应out_trade_no
+	// * @param price
+	// * 支付金额 对应total_fee
+	// * @param notifyurl
+	// * 接收微信支付异步通知回调地址
+	// * @param pars
+	// * @return
+	// * @throws Exception
+	// */
+	// public static List<NameValuePair> getPayParams(String orderid,
+	// String price, String notifyurl, Map<String, Object> pars)
+	// throws Exception {
+	// List<NameValuePair> temp = null;
+	// String prepayid = "";
+	//
+	// String times = WXUtil.getTimeStamp();
+	// // 随机字符串，不长于32位
+	// String noncestr = WXUtil.getNonceStr();
+	//
+	// String localip = "10.9.20.1"; // 默认ip，如果取不到就采用默认的，防止空值；
+	// try {
+	// InetAddress addr = InetAddress.getLocalHost();
+	// localip = addr.getHostAddress().toString();
+	// } catch (Exception e) {
+	// // TODO: handle exception
+	// }
+	// // 对参数进行加密；
+	// Map<String, String> sParaTemp = new HashMap<String, String>();
+	// sParaTemp.put("appid", WxPayConfig.wx_appid);
+	// sParaTemp.put("mch_id", WxPayConfig.wx_partner);
+	// sParaTemp.put("nonce_str", noncestr);
+	// sParaTemp.put("body", WxPayConfig.wx_paybody);
+	// sParaTemp.put("out_trade_no", orderid);
+	// sParaTemp.put("total_fee", price);
+	// sParaTemp.put("spbill_create_ip", localip);
+	// sParaTemp.put("notify_url", notifyurl);
+	// sParaTemp.put("trade_type", WxPayConfig.wx_tradetype);
+	//
+	// String sign = wxSign(sParaTemp);
+	// LogUtils.log("【微信预支付交易单】 --- sign：" + sign);
+	// sParaTemp.put("sign", sign);
+	// // 开始组装参数xml
+	// String requestxml = getRequestXml(sParaTemp);
+	// LogUtils.log("【微信预支付交易单】 --- requestxml：" + requestxml);
+	//
+	// String requestUrl = WxPayConfig.wx_gateurl;
+	//
+	// String resp = PayPost(requestUrl, requestxml);
+	// LogUtils.log("【微信预支付交易单】 --- 微信预支付id回执：" + resp);
+	//
+	// Map<Object, Object> respMap = XMLUtil.doXMLParse(resp);
+	// LogUtils.log("【微信预支付交易单】 --- 微信预支付id回执Map数据：" + respMap.toString());
+	//
+	// String respresut = String.valueOf(respMap.get("result_code"));
+	// if ("SUCCESS".equals(respresut)) {
+	// // TODO 严谨处理，增加成功判断
+	// prepayid = (String.valueOf(respMap.get("prepay_id")));
+	// LogUtils.log("【微信预支付交易单】 --- prepayid：" + prepayid);
+	//
+	// temp = new LinkedList<NameValuePair>();
+	// temp.add(new NameValuePair("appid", WxPayConfig.wx_appid));
+	// temp.add(new NameValuePair("package", WxPayConfig.wx_package));
+	// temp.add(new NameValuePair("partnerid", WxPayConfig.wx_partner));
+	// temp.add(new NameValuePair("prepayid", prepayid));
+	// temp.add(new NameValuePair("noncestr", noncestr));
+	// temp.add(new NameValuePair("timestamp", times));
+	// String resultsign = wxSign(temp);
+	// temp.add(new NameValuePair("sign", resultsign));
+	// temp.remove(0);
+	// temp.remove(0);
+	// temp.add(new NameValuePair("out_trade_no", orderid));
+	// }
+	//
+	// return temp;
+	// }
 
 	/**
 	 * 生成微信预支付订单
@@ -188,11 +193,11 @@ public class WxpayUtil {
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
 	 * @throws Exception
 	 */
-	public static Map<String, Object> genPayParams(String orderId,
-			String price, String notifyUrl, String body, String hostIp,
-			Map<String, Object> params) throws Exception {
-		return genPayParams(orderId, price, notifyUrl, body, hostIp, null,
-				null, null, params);
+	public static Map<String, Object> genPayParams(WxParamDTO wxParam,
+			String orderId, String price, String notifyUrl, String body,
+			String hostIp, Map<String, Object> params) throws Exception {
+		return genPayParams(wxParam, orderId, price, notifyUrl, body, hostIp,
+				null, null, null, params);
 	}
 
 	/**
@@ -221,12 +226,12 @@ public class WxpayUtil {
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
 	 * @throws Exception
 	 */
-	public static Map<String, Object> genPayParams(String orderId,
-			String price, String notifyUrl, String body, String hostIp,
-			String deviceInfo, String detail, String attach,
+	public static Map<String, Object> genPayParams(WxParamDTO wxParam,
+			String orderId, String price, String notifyUrl, String body,
+			String hostIp, String deviceInfo, String detail, String attach,
 			Map<String, Object> params) throws Exception {
-		return genPayParams(orderId, price, notifyUrl, body, hostIp, null,
-				null, deviceInfo, detail, attach, null, null, null, null,
+		return genPayParams(wxParam, orderId, price, notifyUrl, body, hostIp,
+				null, null, deviceInfo, detail, attach, null, null, null, null,
 				params);
 
 	}
@@ -246,8 +251,8 @@ public class WxpayUtil {
 	 *            终端IP
 	 * @param tradeType
 	 *            交易类型
-	 * @param productId
-	 *            商品ID
+	 * @param attach
+	 *            附加数据
 	 * @param params
 	 *            其他参数
 	 * @return Map 预支付结果 -- code 操作状态（成功：SUCCESS 失败：FAIL） -- codeMsg 操作文案 --
@@ -255,12 +260,13 @@ public class WxpayUtil {
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
 	 * @throws Exception
 	 */
-	public static Map<String, Object> genPayParams(String orderId,
-			String price, String notifyUrl, String body, String hostIp,
-			String tradeType, String productId, Map<String, Object> params)
-			throws Exception {
-		return genPayParams(orderId, price, notifyUrl, body, hostIp, tradeType,
-				productId, null, null, null, null, null, null, null, params);
+	public static Map<String, Object> genPayParams(WxParamDTO wxParam,
+			String orderId, String price, String notifyUrl, String body,
+			String hostIp, String tradeType, String attach,
+			Map<String, Object> params) throws Exception {
+		return genPayParams(wxParam, orderId, price, notifyUrl, body, hostIp,
+				tradeType, null, null, null, attach, null, null, null, null,
+				params);
 	}
 
 	/**
@@ -301,12 +307,15 @@ public class WxpayUtil {
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
 	 * @throws Exception
 	 */
-	public static Map<String, Object> genPayParams(String orderId,
-			String price, String notifyUrl, String body, String hostIp,
-			String tradeType, String productId, String deviceInfo,
-			String detail, String attach, String feeType, String goodsTag,
-			String timeStart, String timeExpire, Map<String, Object> params)
-			throws Exception {
+	public static Map<String, Object> genPayParams(WxParamDTO wxParam,
+			String orderId, String price, String notifyUrl, String body,
+			String hostIp, String tradeType, String productId,
+			String deviceInfo, String detail, String attach, String feeType,
+			String goodsTag, String timeStart, String timeExpire,
+			Map<String, Object> params) throws Exception {
+		if (null == wxParam) {
+			throw new Exception("wxParam参数为空");
+		}
 		Map<String, Object> wxPayResult = new HashMap<String, Object>();
 		wxPayResult.put("code", "FAIL");
 		// 随机字符串，不长于32位
@@ -322,8 +331,8 @@ public class WxpayUtil {
 		try {
 			// 对参数进行加密；
 			Map<String, String> sParaTemp = new HashMap<String, String>();
-			sParaTemp.put("appid", WxPayConfig.wx_appid);
-			sParaTemp.put("mch_id", WxPayConfig.wx_partner);
+			sParaTemp.put("appid", wxParam.getAppId());
+			sParaTemp.put("mch_id", wxParam.getMerchant());
 			sParaTemp.put("out_trade_no", orderId);
 			sParaTemp.put("total_fee", price);
 			sParaTemp.put("nonce_str", noncestr);
@@ -331,23 +340,34 @@ public class WxpayUtil {
 				body = WxPayConfig.wx_paybody;
 			}
 			sParaTemp.put("body", body);
+			if (!StringUtils.isEmpty(attach)) {
+				sParaTemp.put("attach", attach);
+			}
 			sParaTemp.put("spbill_create_ip", hostIp);
 			sParaTemp.put("notify_url", notifyUrl);
 			if (null == tradeType) {
 				tradeType = WxPayConfig.wx_tradetype;
 			} else {
-				sParaTemp.put("product_id", productId);
+				// sParaTemp.put("product_id", productId);
 			}
 			sParaTemp.put("trade_type", tradeType);
+			if(!StringUtils.isEmpty(wxParam.getOpenId())){
+				sParaTemp.put("openid", wxParam.getOpenId()); 
+			}
 
-			String sign = wxSign(sParaTemp);
+			String sign = wxSign(sParaTemp, wxParam.getMerchantkey());
 			LogUtils.log("【微信预支付交易单】 --- sign：" + sign);
 			sParaTemp.put("sign", sign);
 			// 开始组装参数xml
 			String requestxml = getRequestXml(sParaTemp);
 			LogUtils.log("【微信预支付交易单】 --- requestxml：" + requestxml);
 
-			String requestUrl = WxPayConfig.wx_gateurl;
+			String requestUrl = "";
+			if (StringUtils.isEmpty(wxParam.getGateurl())) {
+				requestUrl = WxPayConfig.wx_gateurl;
+			} else {
+				requestUrl = wxParam.getGateurl();
+			}
 
 			String resp = PayPost(requestUrl, requestxml);
 			LogUtils.log("【微信预支付交易单】 --- 微信预支付id回执：" + resp);
@@ -390,7 +410,7 @@ public class WxpayUtil {
 	}
 
 	public static String createSign(String characterEncoding,
-			SortedMap<Object, Object> parameters) {
+			SortedMap<Object, Object> parameters, String merchantkey) {
 		StringBuffer sb = new StringBuffer();
 		Set es = parameters.entrySet();
 		Iterator it = es.iterator();
@@ -403,7 +423,7 @@ public class WxpayUtil {
 				sb.append(k + "=" + v + "&");
 			}
 		}
-		sb.append("key=" + WxPayConfig.wx_partnerkey);
+		sb.append("key=" + merchantkey);
 		String sign = MD5Util.MD5Encode(sb.toString(), characterEncoding)
 				.toUpperCase();
 		return sign;
@@ -443,19 +463,19 @@ public class WxpayUtil {
 		return sb.toString();
 	}
 
-	public static String wxSign(List<NameValuePair> linkdata) {
+	public static String wxSign(List<NameValuePair> linkdata, String merchantkey) {
 		String sResult = "";
 		Map<String, String> sParaTemp = new HashMap<String, String>();
 		for (int i = 0; i < linkdata.size(); i++) {
 			sParaTemp
 					.put(linkdata.get(i).getName(), linkdata.get(i).getValue());
-			sResult = wxSign(sParaTemp);
+			sResult = wxSign(sParaTemp, merchantkey);
 		}
 		return sResult;
 	}
 
-	public static String wxSign(Map<String, String> sParaTemp) {
-
+	public static String wxSign(Map<String, String> sParaTemp,
+			String merchantkey) {
 		String sResult = "";
 		try {
 			if (sParaTemp == null || sParaTemp.size() == 0) {
@@ -472,7 +492,7 @@ public class WxpayUtil {
 				mDataBuilder.append(mKeyArray.get(i) + "=")
 						.append(sParaTemp.get(mKeyArray.get(i))).append("&");
 			}
-			mDataBuilder.append("key=" + WxPayConfig.wx_partnerkey);
+			mDataBuilder.append("key=" + merchantkey);
 			return MD5Util.MD5Encode(mDataBuilder.toString(), "UTF-8")
 					.toUpperCase();
 		} catch (Exception e) {
