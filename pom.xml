@@ -6,7 +6,7 @@
     <version>1.0.0</version>
   </parent>
   <artifactId>thirdparty-service</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
   <dependencies>
   	<dependency>
   		<groupId>com.wjhl</groupId>
@@ -22,6 +22,16 @@
 	   <groupId>com.alipay</groupId>
 	   <artifactId>alipay</artifactId>
 	   <version>1.0.0</version>
+	</dependency>
+	<dependency>
+	  <groupId>com.httpClient.httpcore</groupId>
+	  <artifactId>httpcore</artifactId>
+	  <version>1.0.0</version>
+	</dependency>
+	<dependency>
+	  <groupId>com.httpClient.httpclient</groupId>
+	  <artifactId>httpclient</artifactId>
+	  <version>1.0.0</version>
 	</dependency>
   </dependencies>
 </project>
