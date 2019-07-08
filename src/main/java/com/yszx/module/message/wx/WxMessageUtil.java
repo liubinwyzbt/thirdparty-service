@@ -66,6 +66,8 @@ public class WxMessageUtil {
 							+ ";业务参数：" + josnStr);
 				}
 			} else {
+				System.out.println("发送消息失败： 错误编码：" + sendMsgResult.getCode()
+						+ ";业务参数：" + josnStr);
 				LogUtils.info("发送消息失败： 错误编码：" + sendMsgResult.getCode()
 						+ ";业务参数：" + josnStr);
 			}

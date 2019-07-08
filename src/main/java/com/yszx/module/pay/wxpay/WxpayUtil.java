@@ -214,7 +214,7 @@ public class WxpayUtil {
 	 * @param hostIp
 	 *            终端IP
 	 * @param params
-	 *            其他参数
+	 *            其他参数(profitSharing: 是否分账;sceneInfo:场景信息)
 	 * @return Map 预支付结果 -- code 操作状态（成功：SUCCESS 失败：FAIL） -- codeMsg 操作文案 --
 	 *         prepayId 预支付交易会话标识（重要，返回APP端发起微信支付） -- noncestr 微信返回的随机字符串 --
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
@@ -247,7 +247,7 @@ public class WxpayUtil {
 	 * @param attach
 	 *            附加数据
 	 * @param params
-	 *            其他参数
+	 *            其他参数(profitSharing: 是否分账;sceneInfo:场景信息)
 	 * @return Map 预支付结果 -- code 操作状态（成功：SUCCESS 失败：FAIL） -- codeMsg 操作文案 --
 	 *         prepayId 预支付交易会话标识（重要，返回APP端发起微信支付） -- noncestr 微信返回的随机字符串 --
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
@@ -273,7 +273,7 @@ public class WxpayUtil {
 	 * @param notifyUrl
 	 *            接收微信支付异步通知回调地址
 	 * @param body
-	 *            终端IP
+	 *            商品描述
 	 * @param hostIp
 	 *            终端IP
 	 * @param tradeType
@@ -281,7 +281,7 @@ public class WxpayUtil {
 	 * @param attach
 	 *            附加数据
 	 * @param params
-	 *            其他参数
+	 *            其他参数(profitSharing: 是否分账;sceneInfo:场景信息)
 	 * @return Map 预支付结果 -- code 操作状态（成功：SUCCESS 失败：FAIL） -- codeMsg 操作文案 --
 	 *         prepayId 预支付交易会话标识（重要，返回APP端发起微信支付） -- noncestr 微信返回的随机字符串 --
 	 *         timestamp 操作时间戳 -- codeUrl 二维码链接
@@ -339,7 +339,7 @@ public class WxpayUtil {
 			String hostIp, String tradeType, String productId,
 			String deviceInfo, String detail, String attach, String feeType,
 			String goodsTag, String timeStart, String timeExpire,
-			Map<String, Object> params) throws Exception {
+			Map<String, Object> payParams) throws Exception {
 		if (null == wxParam) {
 			throw new Exception("wxParam参数为空");
 		}
@@ -360,6 +360,9 @@ public class WxpayUtil {
 			Map<String, String> sParaTemp = new HashMap<String, String>();
 			sParaTemp.put("appid", wxParam.getAppId());
 			sParaTemp.put("mch_id", wxParam.getMerchant());
+			if(StringUtils.isNotEmpty(wxParam.getSubMerchantId())){
+				sParaTemp.put("sub_mch_id", wxParam.getSubMerchantId());
+			}
 			sParaTemp.put("out_trade_no", orderId);
 			sParaTemp.put("total_fee", price);
 			sParaTemp.put("nonce_str", noncestr);
@@ -380,6 +383,16 @@ public class WxpayUtil {
 			sParaTemp.put("trade_type", tradeType);
 			if(!StringUtils.isEmpty(wxParam.getOpenId())){
 				sParaTemp.put("openid", wxParam.getOpenId()); 
+			}
+			if(null != payParams){
+				if(null != payParams.get("profitSharing") && !"".equals(payParams.get("profitSharing").toString())){
+					//是否分账
+					sParaTemp.put("profit_sharing", payParams.get("profitSharing").toString()); 
+				}
+				if(null != payParams.get("sceneInfo") && !"".equals(payParams.get("sceneInfo").toString())){
+					//场景信息
+					sParaTemp.put("scene_info", payParams.get("sceneInfo").toString()); 
+				}
 			}
 
 			String sign = wxSign(sParaTemp, wxParam.getMerchantkey());
@@ -416,7 +429,7 @@ public class WxpayUtil {
 					wxPayResult.put("prepayId", prepayid);
 					wxPayResult.put("tradeType", respMap.get("trade_type"));
 					wxPayResult.put("codeUrl", respMap.get("code_url"));
-
+					wxPayResult.put("mwebUrl", respMap.get("mweb_url"));
 				} else {
 					String errCode = respMap.get("err_code").toString();
 					String errCodeDes = respMap.get("err_code_des").toString();
@@ -578,6 +591,9 @@ public class WxpayUtil {
 		} catch (NoSuchAlgorithmException ex) {
 			ex.printStackTrace();
 			return map;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			return map;
 		}
 	}
 
@@ -725,6 +741,20 @@ public class WxpayUtil {
 		return sb.substring(0, sb.length() - 1);
 	}
 
+	public static String getRemoteHost(HttpServletRequest request){
+        String ip = request.getHeader("x-forwarded-for");
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)){
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)){
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)){
+            ip = request.getRemoteAddr();
+        }
+        return ip.equals("0:0:0:0:0:0:0:1")?"127.0.0.1":ip;
+    }
+	
 	public static void main(String[] args) throws NumberFormatException,
 			Exception {
 		// List<NameValuePair> list =

@@ -18,6 +18,9 @@ public class WxParamDTO extends BaseEntity {
 
 	private String openId;
 
+	private String subMerchantId;
+	private String spBillCreateIp;// 终端IP
+
 	public WxParamDTO() {
 
 	}
@@ -143,6 +146,22 @@ public class WxParamDTO extends BaseEntity {
 
 	public void setOpenId(String openId) {
 		this.openId = openId;
+	}
+
+	public String getSubMerchantId() {
+		return subMerchantId;
+	}
+
+	public void setSubMerchantId(String subMerchantId) {
+		this.subMerchantId = subMerchantId;
+	}
+
+	public String getSpBillCreateIp() {
+		return spBillCreateIp;
+	}
+
+	public void setSpBillCreateIp(String spBillCreateIp) {
+		this.spBillCreateIp = spBillCreateIp;
 	}
 
 }
