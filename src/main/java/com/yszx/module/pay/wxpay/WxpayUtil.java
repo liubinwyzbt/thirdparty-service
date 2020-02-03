@@ -359,6 +359,9 @@ public class WxpayUtil {
 			// 对参数进行加密；
 			Map<String, String> sParaTemp = new HashMap<String, String>();
 			sParaTemp.put("appid", wxParam.getAppId());
+			if(StringUtils.isNotEmpty(wxParam.getSubAppid())){
+				sParaTemp.put("sub_appid", wxParam.getSubAppid());
+			}
 			sParaTemp.put("mch_id", wxParam.getMerchant());
 			if(StringUtils.isNotEmpty(wxParam.getSubMerchantId())){
 				sParaTemp.put("sub_mch_id", wxParam.getSubMerchantId());
@@ -409,7 +412,7 @@ public class WxpayUtil {
 				requestUrl = wxParam.getGateurl();
 			}
 
-			String resp = PayPost(requestUrl, requestxml);
+			String resp = PayPost (requestUrl, requestxml);
 			LogUtils.log("【微信预支付交易单】 --- 微信预支付id回执：" + resp);
 
 			Map<Object, Object> respMap = XMLUtil.doXMLParse(resp);
