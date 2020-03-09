@@ -359,10 +359,10 @@ public class WxpayUtil {
 			// 对参数进行加密；
 			Map<String, String> sParaTemp = new HashMap<String, String>();
 			sParaTemp.put("appid", wxParam.getAppId());
+			sParaTemp.put("mch_id", wxParam.getMerchant());
 			if(StringUtils.isNotEmpty(wxParam.getSubAppid())){
 				sParaTemp.put("sub_appid", wxParam.getSubAppid());
 			}
-			sParaTemp.put("mch_id", wxParam.getMerchant());
 			if(StringUtils.isNotEmpty(wxParam.getSubMerchantId())){
 				sParaTemp.put("sub_mch_id", wxParam.getSubMerchantId());
 			}
@@ -386,6 +386,9 @@ public class WxpayUtil {
 			sParaTemp.put("trade_type", tradeType);
 			if(!StringUtils.isEmpty(wxParam.getOpenId())){
 				sParaTemp.put("openid", wxParam.getOpenId()); 
+			}
+			if(!StringUtils.isEmpty(wxParam.getSubOpenId())){
+				sParaTemp.put("sub_openid", wxParam.getSubOpenId()); 
 			}
 			if(null != payParams){
 				if(null != payParams.get("profitSharing") && !"".equals(payParams.get("profitSharing").toString())){
